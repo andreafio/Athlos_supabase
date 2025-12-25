@@ -171,6 +171,7 @@ See `/docs` for detailed guides:
 - **[ARCHITECTURE_OVERVIEW.md](./docs/ARCHITECTURE_OVERVIEW.md)** — System design, trade-offs
 - **[DB_MAPPING_MYSQL_TO_SUPABASE.md](./docs/DB_MAPPING_MYSQL_TO_SUPABASE.md)** — Table mapping, consolidations
 - **[AUTH_RLS_DESIGN.md](./docs/AUTH_RLS_DESIGN.md)** — Auth strategy, policy examples
+- **[TESTING_AND_CI.md](./docs/TESTING_AND_CI.md)** — Unified lint/format, test strategy, coverage, and load testing
 - **[CHANGELOG.md](./docs/CHANGELOG.md)** — Versioned changes (semver)
 
 ---
