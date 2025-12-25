@@ -1,5 +1,34 @@
 # Changelog
 
+## [Database Schema Analysis] - 2025-12-25
+
+### Added
+
+- **MYSQL_SCHEMA_ANALYSIS.md**: Comprehensive analysis of all 64 MySQL tables from sportapp_backend dump
+  - Detailed table-by-table breakdown with field descriptions
+  - RLS (Row Level Security) strategy for each table
+  - Identified redundancy: match_points + judo_match_points → unified match_actions
+  - Complete data type conversion mapping (MySQL → PostgreSQL)
+  - Migration phases (Foundation, Business Logic, Competition Engine, Microservices)
+  - Critical MVP requirements documentation
+  - Resource estimation: Supabase Pro ($25/month) + external services (~$35/month)
+
+### Updated
+
+- **DB_MAPPING_MYSQL_TO_SUPABASE.md**: Added reference to detailed schema analysis
+- Migration strategy refined based on actual database structure analysis
+
+### Key Findings
+
+- 38 tables to migrate (core business logic)
+- 16 tables to drop (Laravel/Passport infrastructure)
+- Major optimization: Consolidate 3 scoring tables into 1 unified event store
+- Guardian-minor access control preserved through RLS policies
+- Performance indexes identified for 1000+ concurrent users
+
+---
+
+
 ## [Project Initialization] - 2025-01-09
 
 ### Created
