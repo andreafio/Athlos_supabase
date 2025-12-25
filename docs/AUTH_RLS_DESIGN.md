@@ -334,6 +334,23 @@ SELECT * FROM athletes WHERE id != auth.uid(); -- Returns error/empty
 
 ---
 
+## Test automatici RLS
+
+- Utilizzare framework come pgTAP o script SQL per testare le policy.
+- Esempio di test automatico:
+  ```sql
+  -- Test: un coach vede solo i propri atleti
+  SET jwt.claims.sub = 'coach-uuid';
+  SELECT * FROM athletes; -- Deve restituire solo gli atleti assegnati
+  -- Test: un admin vede tutto
+  SET jwt.claims.sub = 'admin-uuid';
+  SELECT count(*) FROM athletes; -- Deve restituire tutti gli atleti
+  ```
+- Versionare i test insieme alle policy in una cartella `/tests/rls/`.
+- Automatizzare i test in CI/CD dove possibile.
+
+---
+
 ## JWT Token Structure
 
 Supabase JWT contains:

@@ -591,6 +591,65 @@ Concurrent peak (1000 users):
 
 ---
 
+## Naming Convention
+
+- Funzioni RPC: `rpc_<azione>_<oggetto>` (es: `rpc_generate_bracket`, `rpc_update_ranking`)
+- Trigger: `trg_<azione>_<tabella>` (es: `trg_update_ranking`, `trg_log_action`)
+- Microservizi: `msvc_<dominio>` (es: `msvc_match_engine`, `msvc_ai_analysis`)
+- Endpoint REST: `/api/v1/<servizio>/<azione>` (es: `/api/v1/competitions/generate-bracket`)
+
+---
+
+## Error Handling & Fallback
+
+- Ogni microservizio deve implementare:
+  - Retry automatico su errori temporanei (es: 5xx, timeout)
+  - Circuit breaker per evitare overload
+  - Logging centralizzato di tutti gli errori critici
+  - Notifica (es. email/Slack) in caso di fallimento persistente
+  - Risposta fallback chiara (es: errore strutturato JSON)
+
+---
+
+## Esempio pratico: Error handling & fallback
+
+```js
+// Esempio Node.js: chiamata a Supabase con retry e fallback
+const axios = require('axios');
+async function callSupabaseWithRetry(url, data, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await axios.post(url, data);
+      return res.data;
+    } catch (err) {
+      if (i === retries - 1) {
+        // Log errore critico
+        console.error('Errore persistente:', err);
+        // Notifica (es. Slack)
+        // ...
+        // Fallback: risposta strutturata
+        return { error: 'Temporary unavailable', code: 503 };
+      }
+      await new Promise(r => setTimeout(r, 1000)); // Backoff
+    }
+  }
+}
+```
+
+- Tutti i microservizi devono loggare errori critici e notificare in caso di fallimento persistente.
+- Usare risposte fallback strutturate per evitare crash lato client.
+
+---
+
+## API Versioning
+
+- Tutti gli endpoint REST/RPC devono essere versionati: `/api/v1/`, `/rpc/v2/`, ecc.
+- Incrementare la versione solo per breaking changes
+- Deprecare endpoint vecchi con avviso in risposta e documentazione
+- Documentare ogni nuova versione in `MICROSERVICES_ARCHITECTURE.md` e `CHANGELOG.md`
+
+---
+
 **Document Status**: COMPLETE  
 **Last Updated**: 2025-12-25  
 **Next Steps**: Implement Phase 1 (Setup Supabase project)

@@ -301,6 +301,7 @@ CREATE TABLE public.event_registrations (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
   UNIQUE(event_id, athlete_id)
+);
 
 CREATE TABLE public.registration_fees (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -590,6 +591,17 @@ CREATE INDEX idx_notifications_created_at ON public.notifications(created_at);
 -- - Referees can update matches assigned to them
 -- 
 -- All tables will have RLS enabled with appropriate policies.
+
+-- ============================================================================
+-- NAMING CONVENTION (Funzioni, Trigger, Viste, Microservizi)
+-- ============================================================================
+-- Funzioni RPC: rpc_<azione>_<oggetto> (es: rpc_generate_bracket, rpc_update_ranking)
+-- Trigger: trg_<azione>_<tabella> (es: trg_update_ranking, trg_log_action)
+-- Viste: vw_<oggetto>_<descrizione> (es: vw_athletes_active, vw_events_upcoming)
+-- Microservizi: msvc_<dominio> (es: msvc_match_engine, msvc_ai_analysis)
+-- Endpoint REST: /api/v1/<servizio>/<azione> (es: /api/v1/competitions/generate-bracket)
+--
+-- Seguire questi pattern per ogni nuova entità o logica aggiunta.
 
 -- ============================================================================
 -- END OF SCHEMA

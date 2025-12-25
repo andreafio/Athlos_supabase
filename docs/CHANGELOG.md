@@ -144,6 +144,18 @@ Gains:
 
 ---
 
+## Processo di review per modifiche a schema e policy
+
+- Ogni modifica a schema, policy o microservizi deve avvenire tramite Pull Request (PR)
+- È richiesta la review di almeno un altro sviluppatore
+- I test (inclusi test RLS) devono passare prima del merge
+- Aggiornare sempre CHANGELOG.md e la documentazione correlata
+- Nessuna modifica diretta su main/master
+
+---
+
+> Ricorda: ogni modifica a schema, policy, microservizi o API deve essere tracciata qui e nella relativa documentazione.
+
 ## Document History
 
 | Date | Version | Author | Changes |
