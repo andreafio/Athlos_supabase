@@ -40,10 +40,12 @@ CREATE TYPE event_status AS ENUM ('draft', 'published', 'ongoing', 'completed', 
 CREATE TYPE registration_status AS ENUM ('pending', 'confirmed', 'cancelled', 'checked_in');
 CREATE TYPE bracket_type AS ENUM ('single_elimination', 'double_elimination', 'round_robin', 'pool', 'swiss');
 CREATE TYPE match_status AS ENUM ('scheduled', 'in_progress', 'completed', 'cancelled');
+CREATE TYPE result_status AS ENUM ('pending', 'completed', 'cancelled');
 CREATE TYPE action_type AS ENUM ('ippon', 'waza_ari', 'yuko', 'koka', 'shido', 'hansoku_make', 'penalty', 'technique', 'video_event');
 CREATE TYPE team_role AS ENUM ('athlete', 'coach', 'staff', 'admin');
 CREATE TYPE course_recurrence AS ENUM ('once', 'weekly', 'monthly');
-CREATE TYPE attendance_status AS ENUM ('present', 'absent', 'excused', 'late') -- 'present', 'absent', 'excused', 'late');
+CREATE TYPE attendance_status AS ENUM ('present', 'absent', 'excused', 'late');
+-- 'present', 'absent', 'excused', 'late'
 CREATE TYPE enrollment_status AS ENUM ('active', 'inactive', 'completed');
 
 -- ============================================================================
@@ -336,7 +338,6 @@ CREATE TABLE public.athlete_event_categories (
   
   UNIQUE(athlete_id, event_id)
 );
-);
 
 -- ============================================================================
 -- SECTION 9: BRACKETS & MATCHES (Managed by Microservice)
@@ -508,7 +509,7 @@ CREATE INDEX idx_profiles_email ON public.profiles(email);
 -- Athletes indexes
 CREATE INDEX idx_athletes_user_id ON public.athletes(user_id);
 CREATE INDEX idx_athletes_guardian_id ON public.athletes(guardian_id);
-CREATE INDEX idx_athletes_birth_date ON public.athletes(birth_date);
+CREATE INDEX idx_athletes_birth_date ON public.athletes(date_of_birth);
 
 -- Team members indexes
 CREATE INDEX idx_team_members_team_id ON public.team_members(team_id);
