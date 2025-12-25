@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+      - 'chore/**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint_format:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Format (check)
+        run: npm run format:check
+
+  tests:
+    name: Unit, Contract, E2E & Coverage
+    runs-on: ubuntu-latest
+    needs: lint_format
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run full test suite with coverage
+        run: npm test
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
+
+  load_tests:
+    name: Load tests (Realtime & Bracket)
+    runs-on: ubuntu-latest
+    needs: tests
+    if: ${{ github.event_name == 'workflow_dispatch' && secrets.REALTIME_WS_URL != '' && secrets.BRACKET_ENDPOINT != '' }}
+    env:
+      REALTIME_WS_URL: ${{ secrets.REALTIME_WS_URL }}
+      BRACKET_ENDPOINT: ${{ secrets.BRACKET_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run realtime load scenario
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/load/realtime.js
+        env:
+          REALTIME_WS_URL: ${{ env.REALTIME_WS_URL }}
+      - name: Run bracket generation load scenario
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/load/bracket.js
+        env:
+          BRACKET_ENDPOINT: ${{ env.BRACKET_ENDPOINT }}

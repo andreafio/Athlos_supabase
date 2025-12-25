@@ -1,0 +1,193 @@
+openapi: 3.1.0
+info:
+  title: Athlos Supabase API
+  version: 0.1.0
+  description: >-
+    Contract for critical event registration, scoring, and payment flows used
+    by the Supabase-backed stack and microservices.
+servers:
+  - url: https://api.example.com
+    description: Placeholder server for CI contract validation
+paths:
+  /events/{eventId}/registrations:
+    post:
+      summary: Register an athlete for an event
+      operationId: registerEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRegistration'
+      responses:
+        '201':
+          description: Athlete registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+  /matches/{matchId}/score:
+    patch:
+      summary: Update a match score atomically
+      operationId: updateScore
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreUpdate'
+      responses:
+        '200':
+          description: Score updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+  /payments:
+    post:
+      summary: Create a payment intent for registration
+      operationId: createPayment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Athlete:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        clubId:
+          type: string
+      required:
+        - id
+        - fullName
+    EventRegistration:
+      type: object
+      properties:
+        athlete:
+          $ref: '#/components/schemas/Athlete'
+        category:
+          type: string
+        weightClass:
+          type: string
+      required:
+        - athlete
+        - category
+        - weightClass
+    RegistrationResponse:
+      type: object
+      properties:
+        registrationId:
+          type: string
+        eventId:
+          type: string
+        athleteId:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed]
+      required:
+        - registrationId
+        - eventId
+        - athleteId
+        - status
+    ScoreUpdate:
+      type: object
+      properties:
+        red:
+          type: integer
+        blue:
+          type: integer
+        penalties:
+          type: integer
+        clockMs:
+          type: integer
+      required:
+        - red
+        - blue
+    ScoreResponse:
+      type: object
+      properties:
+        matchId:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        score:
+          $ref: '#/components/schemas/ScoreUpdate'
+      required:
+        - matchId
+        - updatedAt
+        - score
+    PaymentRequest:
+      type: object
+      properties:
+        registrationId:
+          type: string
+        amount:
+          type: number
+          minimum: 0
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+        method:
+          type: string
+          enum: [card, bank_transfer]
+      required:
+        - registrationId
+        - amount
+        - currency
+        - method
+    PaymentResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+        registrationId:
+          type: string
+        status:
+          type: string
+          enum: [requires_action, succeeded, failed]
+        clientSecret:
+          type: string
+      required:
+        - paymentId
+        - registrationId
+        - status
