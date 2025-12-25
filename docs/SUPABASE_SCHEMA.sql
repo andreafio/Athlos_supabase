@@ -12,7 +12,7 @@
 --   5. Performance indexes for 1000+ concurrent users
 --   6. Foreign keys with CASCADE deletes where appropriate
 --
--- Total Tables: 38 (from 64 MySQL tables)
+-- Total Tables: 38 (25 MySQL tables)
 -- Dropped: 16 Laravel/Passport infrastructure tables
 --
 -- Date: 2025-12-25
@@ -43,7 +43,7 @@ CREATE TYPE match_status AS ENUM ('scheduled', 'in_progress', 'completed', 'canc
 CREATE TYPE action_type AS ENUM ('ippon', 'waza_ari', 'yuko', 'koka', 'shido', 'hansoku_make', 'penalty', 'technique', 'video_event');
 CREATE TYPE team_role AS ENUM ('athlete', 'coach', 'staff', 'admin');
 CREATE TYPE course_recurrence AS ENUM ('once', 'weekly', 'monthly');
-CREATE TYPE attendance_status AS ENUM ('present', 'absent', 'excused', 'late');
+CREATE TYPE attendance_status AS ENUM ('present', 'absent', 'excused', 'late') -- 'present', 'absent', 'excused', 'late');
 CREATE TYPE enrollment_status AS ENUM ('active', 'inactive', 'completed');
 
 -- ============================================================================
@@ -301,6 +301,40 @@ CREATE TABLE public.event_registrations (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   
   UNIQUE(event_id, athlete_id)
+
+CREATE TABLE public.registration_fees (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  athlete_id UUID NOT NULL REFERENCES public.athletes(id) ON DELETE CASCADE,
+  event_id UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+  
+  amount NUMERIC(8,2) NOT NULL,
+  payment_status payment_status DEFAULT 'pending',
+  payment_date DATE,
+  payment_method TEXT, -- 'card', 'bank_transfer', 'cash', 'stripe'
+  stripe_payment_id TEXT,
+  
+  notes TEXT,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(athlete_id, event_id)
+);
+
+CREATE TABLE public.athlete_event_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  athlete_id UUID NOT NULL REFERENCES public.athletes(id) ON DELETE CASCADE,
+  event_id UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+  weight_category_id UUID NOT NULL REFERENCES public.weight_categories(id) ON DELETE CASCADE,
+  
+  weigh_in_weight DECIMAL(5,2), -- Actual weight at weigh-in
+  weigh_in_time TIMESTAMPTZ,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(athlete_id, event_id)
+);
 );
 
 -- ============================================================================
@@ -425,6 +459,21 @@ CREATE TABLE public.course_enrollments (
   UNIQUE(course_id, athlete_id)
 );
 
+CREATE TABLE public.course_attendances (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
+  athlete_id UUID NOT NULL REFERENCES public.athletes(id) ON DELETE CASCADE,
+  
+  attendance_date DATE NOT NULL,
+  status attendance_status DEFAULT 'present',
+  
+  notes TEXT,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(course_id, athlete_id, attendance_date)
+);
+
 -- ============================================================================
 -- SECTION 11: NOTIFICATIONS
 -- ============================================================================
@@ -504,6 +553,21 @@ CREATE INDEX idx_courses_active ON public.courses(is_active);
 -- Course enrollments indexes
 CREATE INDEX idx_course_enrollments_course_id ON public.course_enrollments(course_id);
 CREATE INDEX idx_course_enrollments_athlete_id ON public.course_enrollments(athlete_id);
+
+-- Registration fees indexes
+CREATE INDEX idx_registration_fees_athlete_id ON public.registration_fees(athlete_id);
+CREATE INDEX idx_registration_fees_event_id ON public.registration_fees(event_id);
+CREATE INDEX idx_registration_fees_payment_status ON public.registration_fees(payment_status);
+
+-- Athlete event categories indexes
+CREATE INDEX idx_athlete_event_categories_athlete_id ON public.athlete_event_categories(athlete_id);
+CREATE INDEX idx_athlete_event_categories_event_id ON public.athlete_event_categories(event_id);
+CREATE INDEX idx_athlete_event_categories_weight_category_id ON public.athlete_event_categories(weight_category_id);
+
+-- Course attendances indexes
+CREATE INDEX idx_course_attendances_course_id ON public.course_attendances(course_id);
+CREATE INDEX idx_course_attendances_athlete_id ON public.course_attendances(athlete_id);
+CREATE INDEX idx_course_attendances_date ON public.course_attendances(attendance_date);
 
 -- Notifications indexes
 CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
