@@ -94,9 +94,20 @@
 
 ---
 
+### 7. 🛰️ [Observability & Monitoring](./OBSERVABILITY_MONITORING.md)
+**Logging, metriche e monitoraggio per Supabase Edge Functions e microservizi**
+
+- Formati di log JSON, trace/span correlation, livelli minimi
+- Metriche chiave (latency, error rate, Realtime/streaming health) con SLO/SLA target
+- Stack OTel + Grafana/Loki/Tempo, dashboard e alert di base
+
+**Usa questo come guida** per implementare telemetria coerente e verificare gli SLO.
+
+---
+
 ## 💾 Database Files
 
-### 7. 🗄️ [Supabase Schema (SQL)](./SUPABASE_SCHEMA.sql)
+### 8. 🗄️ [Supabase Schema (SQL)](./SUPABASE_SCHEMA.sql)
 **Complete PostgreSQL schema for Supabase**
 
 - **25 tables** (optimized from 64 MySQL tables)
@@ -109,7 +120,7 @@
 
 ---
 
-### 8. 🔒 [RLS Policies (SQL)](./RLS_POLICIES.sql)
+### 9. 🔒 [RLS Policies (SQL)](./RLS_POLICIES.sql)
 **Row Level Security policies for all tables**
 
 - Enable RLS on all 25 tables
@@ -124,7 +135,7 @@
 
 ## 📈 Project Management
 
-### 9. 📝 [Changelog](./CHANGELOG.md)
+### 10. 📝 [Changelog](./CHANGELOG.md)
 **Version history and progress tracking**
 
 - Database schema completion
@@ -136,7 +147,7 @@
 
 ---
 
-### 10. 🗓️ [Project Roadmap](./PROJECT_ROADMAP.md)
+### 11. 🗓️ [Project Roadmap](./PROJECT_ROADMAP.md)
 **Gantt chart, epics, and task breakdown**
 
 - **Phase 1**: Foundation & SaaS Setup (Weeks 1-3)
