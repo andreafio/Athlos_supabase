@@ -94,7 +94,19 @@
 
 ---
 
-### 7. 🛰️ [Observability & Monitoring](./OBSERVABILITY_MONITORING.md)
+### 7. 🛡️ [CI/CD, Sicurezza e Deploy](./CI_CD_SECURITY.md)
+**Pipeline, controlli di sicurezza e deploy**
+
+- Gating lint/unit/e2e per PR, staging e production
+- Test RLS e contract test
+- Secret management (Doppler/1Password, Vercel env) e rotazione chiavi
+- Migrazioni con rollback e controlli di sicurezza (audit, SAST)
+
+**Linee guida operative** per release sicure.
+
+---
+
+### 8. 🛰️ [Observability & Monitoring](./OBSERVABILITY_MONITORING.md)
 **Logging, metriche e monitoraggio per Supabase Edge Functions e microservizi**
 
 - Formati di log JSON, trace/span correlation, livelli minimi
@@ -107,7 +119,7 @@
 
 ## 💾 Database Files
 
-### 8. 🗄️ [Supabase Schema (SQL)](./SUPABASE_SCHEMA.sql)
+### 9. 🗄️ [Supabase Schema (SQL)](./SUPABASE_SCHEMA.sql)
 **Complete PostgreSQL schema for Supabase**
 
 - **25 tables** (optimized from 64 MySQL tables)
@@ -120,7 +132,7 @@
 
 ---
 
-### 9. 🔒 [RLS Policies (SQL)](./RLS_POLICIES.sql)
+### 10. 🔒 [RLS Policies (SQL)](./RLS_POLICIES.sql)
 **Row Level Security policies for all tables**
 
 - Enable RLS on all 25 tables
@@ -135,7 +147,7 @@
 
 ## 📈 Project Management
 
-### 10. 📝 [Changelog](./CHANGELOG.md)
+### 11. 📝 [Changelog](./CHANGELOG.md)
 **Version history and progress tracking**
 
 - Database schema completion
@@ -147,7 +159,7 @@
 
 ---
 
-### 11. 🗓️ [Project Roadmap](./PROJECT_ROADMAP.md)
+### 12. 🗓️ [Project Roadmap](./PROJECT_ROADMAP.md)
 **Gantt chart, epics, and task breakdown**
 
 - **Phase 1**: Foundation & SaaS Setup (Weeks 1-3)
