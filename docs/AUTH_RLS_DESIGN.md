@@ -61,6 +61,61 @@ OFFICIAL (Match Referee)
 
 ---
 
+## Role-Specific User Flows & UI Mapping
+
+| Ruolo | Flusso chiave | Permesso/RLS richiesto | UI/Comportamento |
+| --- | --- | --- | --- |
+| Organizer | Crea/aggiorna evento, carica regolamento, pubblica bracket | `events_create`, `events_update_own`, `match_actions_view` (solo lettura) | Dashboard eventi con wizard di setup; CTA "Pubblica" abilitato solo se stato = `draft` e l'utente è organizer/`is_admin()`; pulsante "Aggiungi official" visibile se `events.organizer_id = auth.uid()`. |
+| Coach | Consulta schede atleta, invia note tecniche, registra disponibilità a eventi | `coaches_view_assigned`, `coach_notes_insert`, `event_registrations_insert` (per atleti assegnati) | Lista atleti assegnati filtrata via `coach_athlete_assignments`; form note abilitato solo se mapping coach-atleta esiste; pulsante "Iscrivi a evento" mostra error state se RLS blocca l'inserimento. |
+| Athlete | Visualizza profilo e iscrizioni, scarica pass gara, riceve notifiche match | `athletes_view_own`, `event_registrations_view`, `matches_view_registered` | Home atleta con blocco "Le mie competizioni" alimentato da query filtrate; bottoni di editing disabilitati dopo `is_registered=true`; banner sul match successivo con aggiornamenti realtime. |
+| Official | Consulta match assegnati, invia punteggi/penalità, chiude incontro | `match_actions_insert`, `matches_view_registered` (per match assegnati) | "Sala ufficiali" mostra solo match da `match_officials`; il form di scoring attiva controlli client-side (campo match_id obbligatorio) e fallback offline in sola lettura; il pulsante "Chiudi match" compare solo se l'utente è official per quel match. |
+
+### Pattern UI
+- **CTA condizionati da RLS**: mostra CTA solo se i dati di contesto (organizer_id, mapping coach/athlete, assignment ufficiale) sono già disponibili lato client; evita di affidarti all'errore server per nascondere elementi.
+- **Modalità read-only**: per ruoli che non possono modificare (es. atleta), mantieni la stessa UI con controlli disabilitati + tooltip "permessi insufficienti".
+- **Feature flags per admin**: `is_admin()` può forzare percorsi di debug (es. vedere dati cross-tenant) ma l'UI deve esplicitare lo scope "Admin override" per evitare confusione.
+
+---
+
+## Gestione Errori RLS nel Frontend
+
+1. **Messaggistica utente**
+   - 401/403 dal client Supabase → messaggio umano: "Non hai i permessi per questa azione" + hint contestuale (es. "Chiedi all'organizer di aggiungerti come official").
+   - 404 con `data: null` dopo query filtrata da RLS → mostra stato vuoto "Nessun elemento visibile con i tuoi permessi" invece di errore generico.
+
+2. **Retry controllato**
+   - Ripeti una sola volta dopo refresh token (`supabase.auth.refreshSession()`) se l'errore è `jwt expired`.
+   - Non fare retry su 403 (permesso mancante); proponi azione alternativa (es. link a richiesta ruolo).
+
+3. **Fallback offline/cache**
+   - Usa cache locale (React Query/SWR) in modalità **stale-while-revalidate**: se RLS blocca una query che prima era consentita, mantieni l'ultima versione in sola lettura e mostra badge "Dati da cache".
+   - Per azioni bloccate da RLS, evita di mettere in coda job offline: salva un log locale con motivazione e chiedi riconferma prima di riprovare quando torna online.
+
+4. **Telemetria**
+   - Logga `user_id`, `role`, `table`, `policy` (se disponibile in errore) in Sentry per individuare configurazioni RLS mancanti.
+   - Throttling: massimo 5 eventi di errore RLS per sessione per evitare rumore.
+
+---
+
+## Realtime Client Patterns
+
+### Subscribe / Unsubscribe
+- Crea un **channel per feature** (`matches:<event_id>`, `actions:<match_id>`) e riusa lo stesso channel per più listener per ridurre socket aperti.
+- Disiscrivi nel `useEffect` cleanup o onUnmount: `supabase.channel(id).unsubscribe()` per evitare leak.
+- Per views con filtri dinamici (es. cambio match), esegui `channel.unsubscribe()` prima di creare la nuova sottoscrizione.
+
+### Politica di riconnessione
+- Usa backoff esponenziale con jitter (1s → 2s → 4s, max 30s) e resetta il backoff dopo 30s di stabilità.
+- Se la sessione è scaduta, attendi il refresh JWT prima di riaprire i channel; in caso di fallimento mostra banner "Connessione in pausa, riprova login".
+- Dopo 3 fallimenti consecutivi, entra in modalità **read-only** mostrando i dati da cache e un pulsante "Riprova" manuale.
+
+### Rate limit lato client
+- Max **5 channel attivi per tab** (match list, match detail, scoreboard, notifications, chat). Se serve un nuovo channel, chiudi il meno recente.
+- Debounce degli handler: non processare più di 10 payload/secondo per match (queue con `requestAnimationFrame` o throttle 100ms) per evitare jank UI.
+- Aggrega update non critici (es. aggiornamenti di ranking) usando polling leggero (15-30s) invece della sottoscrizione se l'utente non è nella vista attiva.
+
+---
+
 ## RLS Policy Examples
 
 ### 1. Athletes Table
