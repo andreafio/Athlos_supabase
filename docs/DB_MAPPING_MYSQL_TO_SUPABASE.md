@@ -3,6 +3,8 @@
 ## Overview
 This document details the migration strategy from the current Laravel/MySQL architecture to Supabase (PostgreSQL) with optimizations and consolidations.
 
+> **Detailed Analysis**: For a comprehensive table-by-table breakdown of all 64 MySQL tables, data type conversions, and migration phases, see [MYSQL_SCHEMA_ANALYSIS.md](./MYSQL_SCHEMA_ANALYSIS.md).
+
 ## Key Migration Principles
 
 1. **Normalization**: Consolidate redundant tables (e.g., judo_match_points + match_points)
